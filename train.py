@@ -103,12 +103,13 @@ model = Sequential([
     Activation('relu'),
 
     # prediction (256, 256, 256) -> (256, 256, N_BINS)
-    Conv2D(filters=N_BINS, kernel_size=1, padding="same")
+    Conv2D(filters=N_BINS, kernel_size=1, padding="same"),
+    Activation('softmax')
 ])
 
 model.compile(optimizer='adam',
-              loss='sparse_categorical_crossentropy',
-              metrics=['sparse_categorical_accuracy'])
+              loss='sparse_categorical_crossentropy',)
+              #  metrics=['sparse_categorical_accuracy'])
 
 model.fit_generator(batch_gen, steps_per_epoch=100000, epochs=1)
 
