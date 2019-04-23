@@ -76,4 +76,3 @@ def data_generator(image_paths):
         bgr_image = cv2.imread(path)
         rgb_image = bgr_image[:, :, ::-1]
         yield pre_process(rgb_image)
-
