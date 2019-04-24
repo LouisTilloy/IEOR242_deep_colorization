@@ -12,8 +12,8 @@ N_BINS = 625
 image_paths = [IMAGE_FOLDER + "/" + name for name in next(os.walk(IMAGE_FOLDER))[2]]
 
 def batch_generator():
-    gen = data_generator(image_paths)
     while True:
+        gen = data_generator(image_paths)
         for features, labels in gen:
             inputs = []
             targets = []
@@ -113,9 +113,4 @@ model.compile(optimizer='adam',
 
 model.fit_generator(batch_gen, steps_per_epoch=120000/BATCH_SIZE, epochs=1)
 
-tf.keras.models.save_model(
-    model,
-    "model.h5",
-    overwrite=True,
-    include_optimizer=True
-)
+model.save_weights("weights.h5")
