@@ -6,7 +6,7 @@ from keras.layers import Dense, Activation, Conv2D, BatchNormalization, Deconv2D
 from utils import data_generator
 
 IMAGE_FOLDER = "val"
-BATCH_SIZE = 32
+BATCH_SIZE = 4
 N_BINS = 625
 
 image_paths = [IMAGE_FOLDER + "/" + name for name in next(os.walk(IMAGE_FOLDER))[2]]
@@ -111,7 +111,7 @@ model.compile(optimizer='adam',
               loss='sparse_categorical_crossentropy',)
               #  metrics=['sparse_categorical_accuracy'])
 
-model.fit_generator(batch_gen, steps_per_epoch=100000, epochs=1)
+model.fit_generator(batch_gen, steps_per_epoch=120000/BATCH_SIZE, epochs=1)
 
 tf.keras.models.save_model(
     model,

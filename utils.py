@@ -1,10 +1,6 @@
 import os
 import cv2
 import numpy as np
-import matplotlib.image as mpimg
-
-TRAIN_FOLDER = "train"
-TEST_FOLDER = "test"
 
 def _simple_bin(ab_values):
     """
@@ -74,7 +70,9 @@ def data_generator(image_paths):
     shuffled_paths = np.array(image_paths)
     np.random.shuffle(shuffled_paths)
     for path in shuffled_paths:
-        # bgr_image = cv2.imread(path)
-        # rgb_image = bgr_image[:, :, ::-1]
-        rgb_image = mpimg.imread(path)
-        yield pre_process(rgb_image)
+        bgr_image = cv2.imread(path)
+        rgb_image = bgr_image[:, :, ::-1]
+        try:
+            yield pre_process(rgb_image)
+        except cv2.error:
+            print("/!\\ CV2 ERROR /!\\")
