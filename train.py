@@ -3,6 +3,7 @@ import tensorflow as tf
 import numpy as np
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Conv2D, BatchNormalization, Deconv2D
+from keras.callbacks import ModelCheckpoint
 from utils import data_generator
 
 IMAGE_FOLDER = "val"
@@ -111,6 +112,10 @@ model.compile(optimizer='adam',
               loss='sparse_categorical_crossentropy',)
               #  metrics=['sparse_categorical_accuracy'])
 
-model.fit_generator(batch_gen, steps_per_epoch=120000/BATCH_SIZE, epochs=1)
+
+mc = ModelCheckpoint('weights{epoch:08d}.h5',
+                     save_weights_only=True, period=1)
+
+model.fit_generator(batch_gen, steps_per_epoch=120000/BATCH_SIZE, callbacks=[mc], epochs=10)
 
 model.save_weights("weights.h5")
