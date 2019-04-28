@@ -7,8 +7,8 @@ from keras.callbacks import ModelCheckpoint
 from utils import data_generator
 
 IMAGE_FOLDER = "val"
-BATCH_SIZE = 4
-N_BINS = 625
+BATCH_SIZE = 16
+N_BINS = 13*13
 
 image_paths = [IMAGE_FOLDER + "/" + name for name in next(os.walk(IMAGE_FOLDER))[2]]
 
@@ -28,7 +28,7 @@ batch_gen = batch_generator()
 model = Sequential([
     # conv 1: (256, 256, 1) -> (128, 128, 64)
     Conv2D(filters=64, kernel_size=3, padding="same",
-           input_shape=(256, 256, 1)),
+           input_shape=(104, 104, 1)),
     Activation('relu'),
     Conv2D(filters=64, kernel_size=3, strides=2, padding="same"),
     Activation('relu'),
