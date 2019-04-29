@@ -44,7 +44,7 @@ def pre_process(image):
     """
     rgb_image -> features, labels
     """
-    resized_image = cv2.resize(image, (104, 104))
+    resized_image = cv2.resize(image, (64, 64))
     lab_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2LAB)
     luminance = lab_image[:, :, 0]
     ab_channels = lab_image[:, :, 1:]
