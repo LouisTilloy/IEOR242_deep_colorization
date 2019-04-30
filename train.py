@@ -3,7 +3,7 @@ import tensorflow as tf
 import numpy as np
 import time
 from keras.models import Sequential
-from keras.layers import Dense, Activation, Conv2D, BatchNormalization, Deconv2D
+from keras.layers import Dense, Activation, Conv2D, BatchNormalization, Conv2DTranspose
 from keras.callbacks import ModelCheckpoint, TensorBoard
 from utils import data_generator
 
@@ -89,20 +89,20 @@ def get_model():
         BatchNormalization(),
 
         # conv8: (32, 32, 512) -> (64, 64, 256)
-        Deconv2D(filters=256, kernel_size=4, strides=2, padding="same"),
+        Conv2DTranspose(filters=256, kernel_size=4, strides=2, padding="same"),
         Activation('relu'),
-        Deconv2D(filters=256, kernel_size=3, padding="same"),
+        Conv2DTranspose(filters=256, kernel_size=3, padding="same"),
         Activation('relu'),
-        Deconv2D(filters=256, kernel_size=3, padding="same"),
+        Conv2DTranspose(filters=256, kernel_size=3, padding="same"),
         Activation('relu'),
 
         # FixMe: this layer is NOT in the article
         # conv9 (64, 64, 256) -> (256, 256, 256)
-        Deconv2D(filters=256, kernel_size=4, strides=4, padding="same"),
+        Conv2DTranspose(filters=256, kernel_size=4, strides=4, padding="same"),
         Activation('relu'),
-        Deconv2D(filters=256, kernel_size=3, padding="same"),
+        Conv2DTranspose(filters=256, kernel_size=3, padding="same"),
         Activation('relu'),
-        Deconv2D(filters=256, kernel_size=3, padding="same"),
+        Conv2DTranspose(filters=256, kernel_size=3, padding="same"),
         Activation('relu'),
 
         # prediction (256, 256, 256) -> (256, 256, N_BINS)
@@ -161,19 +161,19 @@ def get_small_model():
         BatchNormalization(),
 
         # conv8: (32, 32, 512) -> (64, 64, 256)
-        Deconv2D(filters=256, kernel_size=4, strides=2, padding="same",
+        Conv2DTranspose(filters=256, kernel_size=4, strides=2, padding="same",
                  kernel_initializer='random_uniform',),
         Activation('relu'),
-        Deconv2D(filters=256, kernel_size=3, padding="same",
+        Conv2DTranspose(filters=256, kernel_size=3, padding="same",
                  kernel_initializer='random_uniform',),
         Activation('relu'),
-        Deconv2D(filters=256, kernel_size=3, padding="same",
+        Conv2DTranspose(filters=256, kernel_size=3, padding="same",
                  kernel_initializer='random_uniform',),
         Activation('relu'),
 
         # FixMe: this layer is NOT in the article
         # conv9 (64, 64, 256) -> (256, 256, 256)
-        Deconv2D(filters=256, kernel_size=4, strides=4, padding="same",
+        Conv2DTranspose(filters=256, kernel_size=4, strides=4, padding="same",
                  kernel_initializer='random_uniform',),
         Activation('relu'),
 
@@ -213,18 +213,18 @@ def get_tiny_model():
         BatchNormalization(),
 
         # conv8: (32, 32, 512) -> (64, 64, 256)
-        Deconv2D(filters=256, kernel_size=4, strides=2, padding="same",
+        Conv2DTranspose(filters=256, kernel_size=4, strides=2, padding="same",
                  kernel_initializer='random_uniform',),
         Activation('relu'),
 
         # FixMe: this layer is NOT in the article
         # conv9 (64, 64, 256) -> (256, 256, 256)
-        Deconv2D(filters=256, kernel_size=4, strides=4, padding="same",
+        Conv2DTranspose(filters=256, kernel_size=4, strides=4, padding="same",
                  kernel_initializer='random_uniform',),
         Activation('relu'),
 
         # prediction (256, 256, 256) -> (256, 256, N_BINS)
-        Conv2D(filters=N_BINS, kernel_size=1, padding="same",
+        Conv2DTranspose(filters=N_BINS, kernel_size=1, padding="same",
                kernel_initializer='random_uniform',),
         Activation('softmax')
     ])
