@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+from skimage import color
 
 def _simple_bin(ab_values):
     """
@@ -44,8 +45,10 @@ def pre_process(image):
     """
     rgb_image -> features, labels
     """
-    resized_image = cv2.resize(image, (104, 104))
-    lab_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2LAB)
+    #resized_image = cv2.resize(image, (104, 104))
+    #lab_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2LAB)
+    rgb_image = np.array(image)
+    lab_image = color.rgb2lab(rgb_image)
     luminance = lab_image[:, :, 0]
     ab_channels = lab_image[:, :, 1:]
     binned_ab_channels = _simple_bin(ab_channels)
@@ -62,8 +65,8 @@ def process_output(luminance, binned_ab_channels, original_shape):
     lab_image = np.stack((luminance,
                           ab_channels[..., 0],
                           ab_channels[..., 1]), axis=2)
-    rgb_image = cv2.cvtColor(lab_image, cv2.COLOR_LAB2RGB)
-    original_size_rgb = cv2.resize(rgb_image, original_shape[:2][::-1])
+    rgb_image = color.lab2rgb(lab_image)
+    original_size_rgb = cv2.resize(rgb_image, original_shape)
 
     return original_size_rgb
 

@@ -1,0 +1,4 @@
+*.jpeg
+*.JPEG
+*.pyc
+.ipynb_checkpoints*
