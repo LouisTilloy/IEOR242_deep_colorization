@@ -58,7 +58,7 @@ if __name__ == "__main__":
         raise ValueError("--model argument should be 'paper', 'small', or 'tiny'")
 
     # ********** TRAIN **********
-    model.compile(optimizer='adam',
+    model.compile(optimizer='Adadelta',
                   loss='sparse_categorical_crossentropy',)
                   #  metrics=['sparse_categorical_accuracy'])
 

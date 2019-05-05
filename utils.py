@@ -10,12 +10,12 @@ def _simple_bin(ab_values):
     (can be broadcasted)
     """
     a, b = ab_values[..., 0], ab_values[..., 1]
-    # a_index = np.minimum(np.maximum(a//10, 0), 24)
-    # b_index = np.minimum(np.maximum(b//10, 0), 24)
-    # return a_index.astype(np.int) * 25.0 + b_index.astype(np.int)
-    a_index = np.minimum(np.maximum(a//20, 0), 12)
-    b_index = np.minimum(np.maximum(b//20, 0), 12)
-    return a_index.astype(np.int) * 13.0 + b_index.astype(np.int)
+    a_index = np.minimum(np.maximum(a//10, 0), 24)
+    b_index = np.minimum(np.maximum(b//10, 0), 24)
+    return a_index.astype(np.int) * 25.0 + b_index.astype(np.int)
+    # a_index = np.minimum(np.maximum(a//20, 0), 12)
+    # b_index = np.minimum(np.maximum(b//20, 0), 12)
+    # return a_index.astype(np.int) * 13.0 + b_index.astype(np.int)
 
 
 def _simple_unbin(bin_integer):
@@ -27,14 +27,14 @@ def _simple_unbin(bin_integer):
     list_shape = list(np.shape(bin_integer))
     ab_values = np.zeros(list_shape + [2])
 
-    # a_index = bin_integer // 25
-    # b_index = bin_integer % 25
-    # a = a_index * 10 + 5
-    # b = b_index * 10 + 5
-    a_index = bin_integer // 13
-    b_index = bin_integer % 13
-    a = a_index * 20 + 10
-    b = b_index * 20 + 10
+    a_index = bin_integer // 25
+    b_index = bin_integer % 25
+    a = a_index * 10 + 5
+    b = b_index * 10 + 5
+    # a_index = bin_integer // 13
+    # b_index = bin_integer % 13
+    # a = a_index * 20 + 10
+    # b = b_index * 20 + 10
 
     ab_values[..., 0] = a
     ab_values[..., 1] = b

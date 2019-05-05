@@ -1,13 +1,13 @@
 from keras.models import Sequential
 from keras.layers import Activation, Conv2D, BatchNormalization, Conv2DTranspose
 
-N_BINS = 13*13
+N_BINS = 25*25
 
 def get_model():
     model = Sequential([
         # conv 1: (256, 256, 1) -> (128, 128, 64)
         Conv2D(filters=64, kernel_size=3, padding="same",
-               input_shape=(104, 104, 1)),
+               input_shape=(32, 32, 1)),
         Activation('relu'),
         Conv2D(filters=64, kernel_size=3, strides=2, padding="same"),
         Activation('relu'),
