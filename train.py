@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 
 from keras.callbacks import ModelCheckpoint, TensorBoard
+from keras.optimizers import Adam
 from models import get_model, get_small_model, get_tiny_model
 from utils import data_generator, cifar_10_train_data_generator
 
@@ -33,8 +34,8 @@ if __name__ == "__main__":
                         help="'imagenet' or 'cifar10")
     parser.add_argument('-n', '--n_data', type=int, default=50000,
                         help="number of images in train dataset")
-    parser.add_argument('-b', '--batch_size', type=int, default=32,
-                        help="batch size for training")
+    parser.add_argument('-b', '--batch_size', type=int, default=40,
+                        help="batch size for training (40 in the paper)")
     args = parser.parse_args()
 
     # Get batch generator
@@ -58,7 +59,8 @@ if __name__ == "__main__":
         raise ValueError("--model argument should be 'paper', 'small', or 'tiny'")
 
     # ********** TRAIN **********
-    model.compile(optimizer='Adadelta',
+    optimizer = Adam(lr=3.16e-5, beta_1=0.9, beta_2=0.99, decay=0.001)
+    model.compile(optimizer=optimizer,
                   loss='sparse_categorical_crossentropy',)
                   #  metrics=['sparse_categorical_accuracy'])
 

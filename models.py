@@ -1,7 +1,9 @@
 from keras.models import Sequential
-from keras.layers import Activation, Conv2D, BatchNormalization, Conv2DTranspose
+from keras.layers import Activation, Conv2D, BatchNormalization, Conv2DTranspose,\
+    UpSampling2D
 
 N_BINS = 25*25
+
 
 def get_model():
     model = Sequential([
@@ -73,18 +75,13 @@ def get_model():
         Conv2D(filters=256, kernel_size=3, padding="same"),
         Activation('relu'),
 
-        # FixMe: this layer is NOT in the article
-        # conv9 (64, 64, 256) -> (256, 256, 256)
-        Conv2DTranspose(filters=256, kernel_size=4, strides=4, padding="same"),
-        Activation('relu'),
-        Conv2D(filters=256, kernel_size=3, padding="same"),
-        Activation('relu'),
-        Conv2D(filters=256, kernel_size=3, padding="same"),
-        Activation('relu'),
+        # unary predictions: (64, 64, 256) -> (64, 64, N_BINS)
+        Conv2D(filters=N_BINS, kernel_size=1, padding="same",
+               kernel_initializer='random_uniform',),
+        Activation('softmax'),
 
-        # prediction (256, 256, 256) -> (256, 256, N_BINS)
-        Conv2D(filters=N_BINS, kernel_size=1, padding="same"),
-        Activation('softmax')
+        # bilinear upsampling: (64, 64, N_BINS) -> (256, 256, N_BINS)
+        UpSampling2D(size=(2, 2), data_format="channels_last", interpolation="bilinear")
     ])
     return model
 
@@ -148,21 +145,21 @@ def get_small_model():
                  kernel_initializer='random_uniform',),
         Activation('relu'),
 
-        # FixMe: this layer is NOT in the article
-        # conv9 (64, 64, 256) -> (256, 256, 256)
-        Conv2DTranspose(filters=256, kernel_size=4, strides=4, padding="same",
-                 kernel_initializer='random_uniform',),
-        Activation('relu'),
-
-        # prediction (256, 256, 256) -> (256, 256, N_BINS)
+        # unary predictions: (64, 64, 256) -> (64, 64, N_BINS)
         Conv2D(filters=N_BINS, kernel_size=1, padding="same",
                kernel_initializer='random_uniform',),
-        Activation('softmax')
+        Activation('softmax'),
+
+        # bilinear upsampling: (64, 64, N_BINS) -> (256, 256, N_BINS)
+        UpSampling2D(size=(2, 2), data_format="channels_last", interpolation="bilinear")
     ])
     return model
 
 
 def get_tiny_model():
+    """
+    OBSOLETE
+    """
     model = Sequential([
         # conv 1: (256, 256, 1) -> (128, 128, 64)
         Conv2D(filters=64, kernel_size=5, strides=2, padding="same",
