@@ -59,6 +59,7 @@ if __name__ == "__main__":
         raise ValueError("--model argument should be 'paper', 'small', or 'tiny'")
 
     # ********** TRAIN **********
+    # Article optimizer
     optimizer = Adam(lr=3.16e-5, beta_1=0.9, beta_2=0.99, decay=0.001)
     model.compile(optimizer=optimizer,
                   loss='sparse_categorical_crossentropy',)

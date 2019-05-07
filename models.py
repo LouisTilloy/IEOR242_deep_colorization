@@ -2,14 +2,14 @@ from keras.models import Sequential
 from keras.layers import Activation, Conv2D, BatchNormalization, Conv2DTranspose,\
     UpSampling2D
 
-N_BINS = 25*25
+N_BINS = 13*13
 
 
 def get_model():
     model = Sequential([
         # conv 1: (256, 256, 1) -> (128, 128, 64)
         Conv2D(filters=64, kernel_size=3, padding="same",
-               input_shape=(32, 32, 1)),
+               input_shape=(104, 104, 1)),
         Activation('relu'),
         Conv2D(filters=64, kernel_size=3, strides=2, padding="same"),
         Activation('relu'),
@@ -81,7 +81,7 @@ def get_model():
         Activation('softmax'),
 
         # bilinear upsampling: (64, 64, N_BINS) -> (256, 256, N_BINS)
-        UpSampling2D(size=(2, 2), data_format="channels_last", interpolation="bilinear")
+        UpSampling2D(size=(4, 4), data_format="channels_last", interpolation="bilinear")
     ])
     return model
 
@@ -151,7 +151,7 @@ def get_small_model():
         Activation('softmax'),
 
         # bilinear upsampling: (64, 64, N_BINS) -> (256, 256, N_BINS)
-        UpSampling2D(size=(2, 2), data_format="channels_last", interpolation="bilinear")
+        UpSampling2D(size=(4, 4), data_format="channels_last", interpolation="bilinear")
     ])
     return model
 
