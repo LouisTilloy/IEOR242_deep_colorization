@@ -2,3 +2,4 @@
 *.JPEG
 *.pyc
 .ipynb_checkpoints*
+*.jpg
