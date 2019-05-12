@@ -36,25 +36,27 @@ if __name__ == "__main__":
                         help="number of images in train dataset")
     parser.add_argument('-b', '--batch_size', type=int, default=40,
                         help="batch size for training (40 in the paper)")
+    parser.add_argument('-r', '--resolution', type=int, default=104,
+                        help="resolution size in the pre-process")
     args = parser.parse_args()
 
     # Get batch generator
     if args.data == "imagenet":
-        batch_gen = batch_generator(lambda: data_generator(IMAGENET_FOLDER),
+        batch_gen = batch_generator(lambda: data_generator(IMAGENET_FOLDER, args.resolution),
                                     args.batch_size)
     elif args.data == "cifar10":
-        batch_gen = batch_generator(lambda: cifar_10_train_data_generator(CIFAR10_FOLDER),
+        batch_gen = batch_generator(lambda: cifar_10_train_data_generator(CIFAR10_FOLDER, args.resolution),
                                     args.batch_size)
     else:
         raise ValueError("--data argument should be either 'imagenet' or 'cifar10")
 
     # Get model
     if args.model == "paper":
-        model = get_model()
+        model = get_model(args.resolution)
     elif args.model == "small":
-        model = get_small_model()
+        model = get_small_model(args.resolution)
     elif args.model == "tiny":
-        model = get_tiny_model()
+        model = get_tiny_model(args.resolution)
     else:
         raise ValueError("--model argument should be 'paper', 'small', or 'tiny'")
 
@@ -68,10 +70,10 @@ if __name__ == "__main__":
     mc = ModelCheckpoint(args.model + '_weights{epoch:08d}.h5',
                          save_weights_only=True, period=1)
 
-    last_epoch = -1  # change this value to fit your training situation
-    #model.load_weights('weights.h5')
+    last_epoch = 0  # change this value to fit your training situation
+    #model.load_weights("{}_weights.h5".format(args.model))
 
     model.fit_generator(batch_gen, steps_per_epoch=args.n_data/args.batch_size, verbose=1,
-                        callbacks=[mc], epochs=50, initial_epoch=last_epoch + 1)
+                        callbacks=[mc], epochs=50, initial_epoch=last_epoch)
 
     model.save_weights("{}_weights.h5".format(args.model))

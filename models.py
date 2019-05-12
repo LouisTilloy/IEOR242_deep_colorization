@@ -5,11 +5,11 @@ from keras.layers import Activation, Conv2D, BatchNormalization, Conv2DTranspose
 N_BINS = 13*13
 
 
-def get_model():
+def get_model(resolution):
     model = Sequential([
         # conv 1: (256, 256, 1) -> (128, 128, 64)
         Conv2D(filters=64, kernel_size=3, padding="same",
-               input_shape=(104, 104, 1)),
+               input_shape=(resolution, resolution, 1)),
         Activation('relu'),
         Conv2D(filters=64, kernel_size=3, strides=2, padding="same"),
         Activation('relu'),
@@ -86,12 +86,12 @@ def get_model():
     return model
 
 
-def get_small_model():
+def get_small_model(resolution):
     model = Sequential([
         # conv 1: (256, 256, 1) -> (128, 128, 64)
         Conv2D(filters=64, kernel_size=3, padding="same",
                kernel_initializer='random_uniform',
-               input_shape=(104, 104, 1)),
+               input_shape=(resolution, resolution, 1)),
         Activation('relu'),
         Conv2D(filters=64, kernel_size=3, strides=2, padding="same",
                kernel_initializer='random_uniform',),
@@ -156,7 +156,7 @@ def get_small_model():
     return model
 
 
-def get_tiny_model():
+def get_tiny_model(resolution):
     """
     OBSOLETE
     """
@@ -164,7 +164,7 @@ def get_tiny_model():
         # conv 1: (256, 256, 1) -> (128, 128, 64)
         Conv2D(filters=64, kernel_size=5, strides=2, padding="same",
                kernel_initializer='random_uniform',
-               input_shape=(32, 32, 1)),
+               input_shape=(resolution, resolution, 1)),
         Activation('relu'),
         BatchNormalization(),
 
