@@ -41,7 +41,7 @@ def pre_process(image, resolution, n_1d_bins=DEFAULT_BIN_NUMBER):
     """
     rgb_image -> features, labels
     :param image: np.array
-    :param resolution: (int, int)
+    :param resolution: int
     :param n_1d_bins: int
     """
     resized_image = cv2.resize(image, (resolution, resolution))
