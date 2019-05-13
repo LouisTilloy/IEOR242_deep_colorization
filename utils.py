@@ -5,7 +5,7 @@ import numpy as np
 
 DEFAULT_BIN_NUMBER = 13
 
-
+# ********** Classification utils **********
 def _simple_bin(ab_values, n_1d_bins):
     """
     Given a 2 dimensions array (a, b), maps it to an integer
@@ -69,7 +69,93 @@ def process_output(luminance, binned_ab_channels, original_shape,
     return original_size_rgb
 
 
-def data_generator(imagenet_folder, resolution):
+# ********** 1d bins | a,b predicted separately utils**********
+def _simple_bin_1d(value, n_bins):
+    """
+    Given an array of values, maps them to integers
+    in {0, 1, ..., n_bins - 1}. It uses a simple 1D discretization.
+    (can be broadcasted)
+    """
+    value = value.astype(int)
+    index = np.minimum(np.maximum((value * n_bins)//255, 0), n_bins - 1)
+    return index.astype(np.int)
+
+
+def _simple_unbin_1d(bin_integer, n_bins):
+    """
+    Given an integer, maps it back to the corresponding value.
+    (can be broadcasted)
+    """
+    index = bin_integer // n_bins
+    values = ((index + 0.5) * 255)//n_bins  # +0.5 to center the bins
+    return values.astype(np.uint8)
+
+
+def pre_process_1d(image, resolution, n_bins=DEFAULT_BIN_NUMBER):
+    """
+    rgb_image -> features, labels
+    :param image: np.array
+    :param resolution: int
+    :param n_1d_bins: int
+    """
+    resized_image = cv2.resize(image, (resolution, resolution))
+    lab_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2LAB)
+    luminance = lab_image[:, :, 0].astype(int) - 128  # Center luminance
+    ab_channels = lab_image[:, :, 1:]
+    binned_ab_channels = _simple_bin_1d(ab_channels, n_bins)
+
+    return luminance, binned_ab_channels
+
+
+def process_output_1d(luminance, binned_ab_channels, original_shape,
+                      n_bins=DEFAULT_BIN_NUMBER):
+    """
+    features, labels, shape -> rgb_image
+    :param original_shape: np.shape(original_image)
+    """
+    ab_channels = _simple_unbin_1d(binned_ab_channels, n_bins)
+    lab_image = np.stack(((luminance + 128).astype(np.uint8),
+                          ab_channels[..., 0],
+                          ab_channels[..., 1]), axis=2)
+    rgb_image = cv2.cvtColor(lab_image, cv2.COLOR_LAB2RGB)
+    original_size_rgb = cv2.resize(rgb_image, original_shape[:2][::-1])
+
+    return original_size_rgb
+
+
+# ********** Regression utils **********
+def pre_process_regression(image, resolution):
+    """
+    rgb_image -> features, labels
+    :param image: np.array
+    :param resolution: int
+    """
+    resized_image = cv2.resize(image, (resolution, resolution))
+    lab_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2LAB)
+    luminance = lab_image[:, :, 0].astype(int) - 128  # Center luminance
+    ab_channels = lab_image[:, :, 1:].astype(float)
+
+    return luminance, ab_channels
+
+
+def process_output_regression(luminance, ab_channels, original_shape):
+    """
+    features, labels, shape -> rgb_image
+    :param luminance: size:(batch_size (optional), width, height, 1)
+    :param ab_channels: size:(batch_size (optional), width, height, 2)
+    :param original_shape: np.shape(original_image)
+    """
+    lab_image = np.stack(((luminance[..., 0] + 128).astype(np.uint8),
+                          ab_channels[..., 0].astype(np.uint8),
+                          ab_channels[..., 1].astype(np.uint8)), axis=2)
+    rgb_image = cv2.cvtColor(lab_image, cv2.COLOR_LAB2RGB)
+    original_size_rgb = cv2.resize(rgb_image, original_shape[:2][::-1])
+
+    return original_size_rgb
+
+
+# ********** GENERATORS **********
+def data_generator(imagenet_folder, resolution, is_regression=False, is_1d=False):
     """
     Given the imagenet folder, returns a generator
     that goes through all the images (once) and
@@ -85,12 +171,20 @@ def data_generator(imagenet_folder, resolution):
         bgr_image = cv2.imread(path)
         rgb_image = bgr_image[:, :, ::-1]
         try:
-            yield pre_process(rgb_image, resolution)
+            if is_regression:
+                features, labels = pre_process_regression(rgb_image, resolution)
+                yield np.expand_dims(features, -1), labels
+            elif is_1d:
+                features, labels = pre_process_1d(rgb_image, resolution)
+                yield np.expand_dims(features, -1), np.expand_dims(labels, -1)
+            else:
+                features, labels = pre_process_1d(rgb_image, resolution)
+                yield np.expand_dims(features, -1), np.expand_dims(labels, -1)
         except cv2.error:
             print("/!\\ CV2 ERROR /!\\")
 
 
-def cifar_10_train_data_generator(cifar_folder, resolution):
+def cifar_10_train_data_generator(cifar_folder, resolution, is_regression=False, is_1d=False):
     """
     Given the folder where cifar-10 is stored,
     returns a generator over all training images.
@@ -112,4 +206,12 @@ def cifar_10_train_data_generator(cifar_folder, resolution):
     shuffled_images = np.array(list_images)
     np.random.shuffle(shuffled_images)
     for image in shuffled_images:
-        yield pre_process(image, resolution)
+        if is_regression:
+            features, labels = pre_process_regression(image, resolution)
+            yield np.expand_dims(features, -1), labels
+        elif is_1d:
+            features, labels = pre_process_1d(image, resolution)
+            yield np.expand_dims(features, -1), np.expand_dims(labels, -1)
+        else:
+            features, labels = pre_process_1d(image, resolution)
+            yield np.expand_dims(features, -1), np.expand_dims(labels, -1)
