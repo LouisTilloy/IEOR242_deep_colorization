@@ -60,15 +60,16 @@ class TestUtils(unittest.TestCase):
     def test_pre_process(self):
         # 3 1d_bins: (0, 85, 170, 255)
         n_1d_bins = 3
-        resolution = (2, 2)
+        resolution = 2
 
         image = np.array(
             [[[50, 50, 50], [0, 25, 100]],
              [[0, 50, 100], [100, 150, 200]]], dtype=np.uint8
         )
 
-        expected_luminance = np.array([[-75, -94],
-                                       [-75,  26]], dtype=int)
+        # note the (width, height, 1) size instead of (width, height)
+        expected_luminance = np.array([[[-75], [-94]],
+                                       [[-75],  [26]]], dtype=int)
 
         expected_ab_bins = np.array([[4, 3],
                                      [4, 4]], dtype=int)
@@ -84,8 +85,10 @@ class TestUtils(unittest.TestCase):
         # 3 1d_bins: (0, 85, 170, 255)
         n_1d_bins = 3
         original_shape = (2, 2)
-        luminance = np.array([[-75, -94],
-                              [-75,  26]], dtype=int)
+        
+        # note the (width, height, 1) size instead of (width, height)
+        luminance = np.array([[[-75], [-94]],
+                              [[-75],  [26]]], dtype=int)
         binned_ab_channels = np.array([[4, 3],
                                        [4, 4]], dtype=int)
 

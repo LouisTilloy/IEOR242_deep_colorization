@@ -2,10 +2,8 @@ from keras.models import Sequential
 from keras.layers import Activation, Conv2D, BatchNormalization, Conv2DTranspose,\
     UpSampling2D
 
-N_BINS = 13*13
 
-
-def get_model(resolution, is_regression):
+def get_model(resolution, n_classes=None, is_regression=False):
     body = [
         # conv 1: (256, 256, 1) -> (128, 128, 64)
         Conv2D(filters=64, kernel_size=3, padding="same",
@@ -100,19 +98,19 @@ def get_model(resolution, is_regression):
             ]
     else:
         head = [
-            # unary predictions: (64, 64, 256) -> (64, 64, N_BINS)
-            Conv2D(filters=N_BINS, kernel_size=1, padding="same",
+            # unary predictions: (64, 64, 256) -> (64, 64, n_classes)
+            Conv2D(filters=n_classes, kernel_size=1, padding="same",
                    kernel_initializer='random_uniform',),
             Activation('softmax'),
 
-            # bilinear upsampling: (64, 64, N_BINS) -> (256, 256, N_BINS)
+            # bilinear upsampling: (64, 64, n_classes) -> (256, 256, n_classes)
             UpSampling2D(size=(4, 4), data_format="channels_last", interpolation="bilinear")
         ]
 
     return Sequential(body + head)
 
 
-def get_small_model(resolution, is_regression):
+def get_small_model(resolution, n_classes=None, is_regression=False):
     model = Sequential([
         # conv 1: (256, 256, 1) -> (128, 128, 64)
         Conv2D(filters=64, kernel_size=3, padding="same",
@@ -171,18 +169,18 @@ def get_small_model(resolution, is_regression):
                  kernel_initializer='random_uniform',),
         Activation('relu'),
 
-        # unary predictions: (64, 64, 256) -> (64, 64, N_BINS)
-        Conv2D(filters=N_BINS, kernel_size=1, padding="same",
+        # unary predictions: (64, 64, 256) -> (64, 64, n_classes)
+        Conv2D(filters=n_classes, kernel_size=1, padding="same",
                kernel_initializer='random_uniform',),
         Activation('softmax'),
 
-        # bilinear upsampling: (64, 64, N_BINS) -> (256, 256, N_BINS)
+        # bilinear upsampling: (64, 64, n_classes) -> (256, 256, n_classes)
         UpSampling2D(size=(4, 4), data_format="channels_last", interpolation="bilinear")
     ])
     return model
 
 
-def get_tiny_model(resolution, is_regression):
+def get_tiny_model(resolution, n_classes=None, is_regression=False):
     """
     OBSOLETE
     """
@@ -223,8 +221,8 @@ def get_tiny_model(resolution, is_regression):
                  kernel_initializer='random_uniform',),
         Activation('relu'),
 
-        # prediction (256, 256, 256) -> (256, 256, N_BINS)
-        Conv2DTranspose(filters=N_BINS, kernel_size=1, padding="same",
+        # prediction (256, 256, 256) -> (256, 256, n_classes)
+        Conv2DTranspose(filters=n_classes, kernel_size=1, padding="same",
                         kernel_initializer='random_uniform',),
         Activation('softmax')
     ])

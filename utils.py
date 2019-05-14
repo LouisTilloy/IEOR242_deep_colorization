@@ -3,7 +3,6 @@ import os
 import pickle
 import numpy as np
 
-DEFAULT_BIN_NUMBER = 13
 
 # ********** Classification utils **********
 def _simple_bin(ab_values, n_1d_bins):
@@ -18,17 +17,17 @@ def _simple_bin(ab_values, n_1d_bins):
     return a_index.astype(np.int) * n_1d_bins + b_index.astype(np.int)
 
 
-def _simple_unbin(bin_integer, n_1d_bins):
+def _simple_unbin(bin_integers, n_1d_bins):
     """
-    Given an integer, maps it back to the corresponding
+    Given an array of integers, maps it back to the corresponding
     (a, b) values.
     (can be broadcasted)
     """
-    list_shape = list(np.shape(bin_integer))
+    list_shape = list(np.shape(bin_integers))
     ab_values = np.zeros(list_shape + [2])
 
-    a_index = bin_integer // n_1d_bins
-    b_index = bin_integer % n_1d_bins
+    a_index = bin_integers // n_1d_bins
+    b_index = bin_integers % n_1d_bins
     a = ((a_index + 0.5) * 255)//n_1d_bins  # +0.5 to center the bins
     b = ((b_index + 0.5) * 255)//n_1d_bins
 
@@ -37,7 +36,7 @@ def _simple_unbin(bin_integer, n_1d_bins):
     return ab_values.astype(np.uint8)
 
 
-def pre_process(image, resolution, n_1d_bins=DEFAULT_BIN_NUMBER):
+def pre_process(image, resolution, n_1d_bins):
     """
     rgb_image -> features, labels
     :param image: np.array
@@ -46,7 +45,7 @@ def pre_process(image, resolution, n_1d_bins=DEFAULT_BIN_NUMBER):
     """
     resized_image = cv2.resize(image, (resolution, resolution))
     lab_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2LAB)
-    luminance = lab_image[:, :, 0].astype(int) - 128  # Center luminance
+    luminance = lab_image[:, :, 0:1].astype(int) - 128  # Center luminance
     ab_channels = lab_image[:, :, 1:]
     binned_ab_channels = _simple_bin(ab_channels, n_1d_bins)
 
@@ -54,13 +53,13 @@ def pre_process(image, resolution, n_1d_bins=DEFAULT_BIN_NUMBER):
 
 
 def process_output(luminance, binned_ab_channels, original_shape,
-                   n_1d_bins=DEFAULT_BIN_NUMBER):
+                   n_1d_bins):
     """
     features, labels, shape -> rgb_image
     :param original_shape: np.shape(original_image)
     """
     ab_channels = _simple_unbin(binned_ab_channels, n_1d_bins)
-    lab_image = np.stack(((luminance + 128).astype(np.uint8),
+    lab_image = np.stack(((luminance[..., 0] + 128).astype(np.uint8),
                           ab_channels[..., 0],
                           ab_channels[..., 1]), axis=2)
     rgb_image = cv2.cvtColor(lab_image, cv2.COLOR_LAB2RGB)
@@ -91,7 +90,7 @@ def _simple_unbin_1d(bin_integer, n_bins):
     return values.astype(np.uint8)
 
 
-def pre_process_1d(image, resolution, n_bins=DEFAULT_BIN_NUMBER):
+def pre_process_1d(image, resolution, n_bins):
     """
     rgb_image -> features, labels
     :param image: np.array
@@ -100,7 +99,7 @@ def pre_process_1d(image, resolution, n_bins=DEFAULT_BIN_NUMBER):
     """
     resized_image = cv2.resize(image, (resolution, resolution))
     lab_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2LAB)
-    luminance = lab_image[:, :, 0].astype(int) - 128  # Center luminance
+    luminance = lab_image[:, :, 0:1].astype(int) - 128  # Center luminance
     ab_channels = lab_image[:, :, 1:]
     binned_ab_channels = _simple_bin_1d(ab_channels, n_bins)
 
@@ -108,15 +107,15 @@ def pre_process_1d(image, resolution, n_bins=DEFAULT_BIN_NUMBER):
 
 
 def process_output_1d(luminance, binned_ab_channels, original_shape,
-                      n_bins=DEFAULT_BIN_NUMBER):
+                      n_bins):
     """
     features, labels, shape -> rgb_image
     :param original_shape: np.shape(original_image)
     """
     ab_channels = _simple_unbin_1d(binned_ab_channels, n_bins)
-    lab_image = np.stack(((luminance + 128).astype(np.uint8),
-                          ab_channels[..., 0],
-                          ab_channels[..., 1]), axis=2)
+    lab_image = np.stack(((luminance[..., 0] + 128).astype(np.uint8),
+                          ab_channels[..., 0, 0],
+                          ab_channels[..., 0, 1]), axis=2)
     rgb_image = cv2.cvtColor(lab_image, cv2.COLOR_LAB2RGB)
     original_size_rgb = cv2.resize(rgb_image, original_shape[:2][::-1])
 
@@ -132,13 +131,13 @@ def pre_process_regression(image, resolution):
     """
     resized_image = cv2.resize(image, (resolution, resolution))
     lab_image = cv2.cvtColor(resized_image, cv2.COLOR_RGB2LAB)
-    luminance = lab_image[:, :, 0].astype(int) - 128  # Center luminance
+    luminance = lab_image[:, :, 0:1].astype(int) - 128  # Center luminance
     ab_channels = lab_image[:, :, 1:].astype(float)
 
     return luminance, ab_channels
 
 
-def process_output_regression(luminance, ab_channels, original_shape):
+def process_output_regression(luminance, ab_channels, original_shape, n_bins=None):
     """
     features, labels, shape -> rgb_image
     :param luminance: size:(batch_size (optional), width, height, 1)
@@ -155,12 +154,14 @@ def process_output_regression(luminance, ab_channels, original_shape):
 
 
 # ********** GENERATORS **********
-def data_generator(imagenet_folder, resolution, is_regression=False, is_1d=False):
+def data_generator(imagenet_folder, resolution, n_bins=None, is_regression=False, is_1d=False):
     """
     Given the imagenet folder, returns a generator
     that goes through all the images (once) and
     pre process them.
     """
+    if not is_regression and n_bins is None:
+        raise ValueError("Must specifiy a number of bins for classification pre-process.")
     # Step 0: get imagenet images path
     imagenet_paths = [imagenet_folder + "/" + name for name in next(os.walk(imagenet_folder))[2]]
     
@@ -172,23 +173,24 @@ def data_generator(imagenet_folder, resolution, is_regression=False, is_1d=False
         rgb_image = bgr_image[:, :, ::-1]
         try:
             if is_regression:
-                features, labels = pre_process_regression(rgb_image, resolution)
-                yield np.expand_dims(features, -1), labels
+                yield pre_process_regression(rgb_image, resolution)
             elif is_1d:
-                features, labels = pre_process_1d(rgb_image, resolution)
-                yield np.expand_dims(features, -1), np.expand_dims(labels, -1)
+                yield pre_process_1d(rgb_image, resolution, n_bins)
             else:
-                features, labels = pre_process_1d(rgb_image, resolution)
-                yield np.expand_dims(features, -1), np.expand_dims(labels, -1)
+                yield pre_process(rgb_image, resolution, n_bins)
         except cv2.error:
             print("/!\\ CV2 ERROR /!\\")
 
 
-def cifar_10_train_data_generator(cifar_folder, resolution, is_regression=False, is_1d=False):
+def cifar_10_train_data_generator(cifar_folder, n_bins=None, is_regression=False, is_1d=False):
     """
     Given the folder where cifar-10 is stored,
     returns a generator over all training images.
     """
+    if not is_regression and n_bins is None:
+        raise ValueError("Must specifiy a number of bins for classification pre-process.")
+    resolution = 32
+
     # Step 0: retrieve cifar-10 batches
     cifar_batches = []
     for i in range(1, 6):
@@ -207,11 +209,8 @@ def cifar_10_train_data_generator(cifar_folder, resolution, is_regression=False,
     np.random.shuffle(shuffled_images)
     for image in shuffled_images:
         if is_regression:
-            features, labels = pre_process_regression(image, resolution)
-            yield np.expand_dims(features, -1), labels
+            yield pre_process_regression(image, resolution)
         elif is_1d:
-            features, labels = pre_process_1d(image, resolution)
-            yield np.expand_dims(features, -1), np.expand_dims(labels, -1)
+            yield pre_process_1d(image, resolution, n_bins)
         else:
-            features, labels = pre_process_1d(image, resolution)
-            yield np.expand_dims(features, -1), np.expand_dims(labels, -1)
+            yield pre_process(image, resolution, n_bins)
