@@ -81,7 +81,7 @@ if __name__ == "__main__":
         model.compile(optimizer=optimizer,
                       loss='sparse_categorical_crossentropy')
 
-    mc = ModelCheckpoint(prefix + '_weights{epoch:08d}.h5',
+    mc = ModelCheckpoint(prefix + '_loss{loss:.3f}_weights{epoch:04d}.h5',
                          save_weights_only=True, period=1)
 
     last_epoch = 0  # change this value to fit your training situation
@@ -89,4 +89,4 @@ if __name__ == "__main__":
     model.fit_generator(batch_gen, steps_per_epoch=args.n_data/args.batch_size, verbose=1,
                         callbacks=[mc], epochs=50, initial_epoch=last_epoch)
 
-    model.save_weights("_weights.h5".format(prefix))
+    model.save_weights("{}_weights.h5".format(prefix))
