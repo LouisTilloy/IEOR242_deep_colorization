@@ -100,7 +100,7 @@ def get_model(resolution, n_classes=None, is_regression=False):
         head = [
             # unary predictions: (64, 64, 256) -> (64, 64, n_classes)
             Conv2D(filters=n_classes, kernel_size=1, padding="same",
-                   kernel_initializer='random_uniform',),
+                   kernel_initializer='random_uniform'),
             Activation('softmax'),
 
             # bilinear upsampling: (64, 64, n_classes) -> (256, 256, n_classes)

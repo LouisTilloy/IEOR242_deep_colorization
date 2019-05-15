@@ -71,8 +71,8 @@ class TestUtils(unittest.TestCase):
         expected_luminance = np.array([[[-75], [-94]],
                                        [[-75],  [26]]], dtype=int)
 
-        expected_ab_bins = np.array([[4, 3],
-                                     [4, 4]], dtype=int)
+        expected_ab_bins = np.array([[[4], [3]],
+                                     [[4], [4]]], dtype=int)
 
         luminance, ab_bins = pre_process(image, resolution, n_1d_bins)
 
@@ -85,7 +85,7 @@ class TestUtils(unittest.TestCase):
         # 3 1d_bins: (0, 85, 170, 255)
         n_1d_bins = 3
         original_shape = (2, 2)
-        
+
         # note the (width, height, 1) size instead of (width, height)
         luminance = np.array([[[-75], [-94]],
                               [[-75],  [26]]], dtype=int)

@@ -28,7 +28,7 @@ def batch_generator(generator, batch_size):
 if __name__ == "__main__":
     # ********** PARSER **********
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default="tiny",
+    parser.add_argument('--model', type=str, default="paper",
                         help="'paper', 'small' or 'tiny'")
     parser.add_argument('--data', type=str, default="imagenet",
                         help="'imagenet' or 'cifar10")

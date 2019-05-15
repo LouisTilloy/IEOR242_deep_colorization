@@ -49,7 +49,7 @@ def pre_process(image, resolution, n_1d_bins):
     ab_channels = lab_image[:, :, 1:]
     binned_ab_channels = _simple_bin(ab_channels, n_1d_bins)
 
-    return luminance, binned_ab_channels
+    return luminance, np.expand_dims(binned_ab_channels, -1)
 
 
 def process_output(luminance, binned_ab_channels, original_shape,
@@ -58,6 +58,7 @@ def process_output(luminance, binned_ab_channels, original_shape,
     features, labels, shape -> rgb_image
     :param original_shape: np.shape(original_image)
     """
+    binned_ab_channels = np.squeeze(binned_ab_channels)
     ab_channels = _simple_unbin(binned_ab_channels, n_1d_bins)
     lab_image = np.stack(((luminance[..., 0] + 128).astype(np.uint8),
                           ab_channels[..., 0],
@@ -68,7 +69,7 @@ def process_output(luminance, binned_ab_channels, original_shape,
     return original_size_rgb
 
 
-# ********** 1d bins | a,b predicted separately utils**********
+# ********** 1d bins | a,b predicted separately utils **********
 def _simple_bin_1d(value, n_bins):
     """
     Given an array of values, maps them to integers
@@ -103,7 +104,7 @@ def pre_process_1d(image, resolution, n_bins):
     ab_channels = lab_image[:, :, 1:]
     binned_ab_channels = _simple_bin_1d(ab_channels, n_bins)
 
-    return luminance, binned_ab_channels
+    return luminance, np.expand_dims(binned_ab_channels, -1)
 
 
 def process_output_1d(luminance, binned_ab_channels, original_shape,
@@ -112,10 +113,11 @@ def process_output_1d(luminance, binned_ab_channels, original_shape,
     features, labels, shape -> rgb_image
     :param original_shape: np.shape(original_image)
     """
+    binned_ab_channels = np.squeeze(binned_ab_channels)
     ab_channels = _simple_unbin_1d(binned_ab_channels, n_bins)
     lab_image = np.stack(((luminance[..., 0] + 128).astype(np.uint8),
-                          ab_channels[..., 0, 0],
-                          ab_channels[..., 0, 1]), axis=2)
+                          ab_channels[..., 0],
+                          ab_channels[..., 1]), axis=2)
     rgb_image = cv2.cvtColor(lab_image, cv2.COLOR_LAB2RGB)
     original_size_rgb = cv2.resize(rgb_image, original_shape[:2][::-1])
 
@@ -154,12 +156,14 @@ def process_output_regression(luminance, ab_channels, original_shape, n_bins=Non
 
 
 # ********** GENERATORS **********
-def data_generator(imagenet_folder, resolution, n_bins=None, is_regression=False, is_1d=False):
+def data_generator(imagenet_folder, resolution, n_bins=None, is_regression=False, is_1d=False, seed=None):
     """
     Given the imagenet folder, returns a generator
     that goes through all the images (once) and
     pre process them.
     """
+    np.random.seed(seed)
+
     if not is_regression and n_bins is None:
         raise ValueError("Must specifiy a number of bins for classification pre-process.")
     # Step 0: get imagenet images path
@@ -182,11 +186,13 @@ def data_generator(imagenet_folder, resolution, n_bins=None, is_regression=False
             print("/!\\ CV2 ERROR /!\\")
 
 
-def cifar_10_train_data_generator(cifar_folder, n_bins=None, is_regression=False, is_1d=False):
+def cifar_10_train_data_generator(cifar_folder, n_bins=None, is_regression=False, is_1d=False, seed=None):
     """
     Given the folder where cifar-10 is stored,
     returns a generator over all training images.
     """
+    np.random.seed(seed)
+    
     if not is_regression and n_bins is None:
         raise ValueError("Must specifiy a number of bins for classification pre-process.")
     resolution = 32
