@@ -1,7 +1,7 @@
 from keras.models import Sequential
 from keras.layers import Activation, Conv2D, BatchNormalization, Conv2DTranspose,\
     UpSampling2D, LeakyReLU
-
+from keras.initializers import RandomUniform
 
 def get_model(resolution, n_classes=None, is_regression=False):
     body = [
@@ -187,43 +187,43 @@ def get_tiny_model(resolution, n_classes=None, is_regression=False):
     model = Sequential([
         # conv 1: (256, 256, 1) -> (128, 128, 64)
         Conv2D(filters=64, kernel_size=5, strides=2, padding="same",
-               kernel_initializer='random_uniform',
+               kernel_initializer=RandomUniform(minval=-0.1, maxval=0.1),
                input_shape=(resolution, resolution, 1)),
         LeakyReLU(),
         BatchNormalization(),
 
         # conv 2: (128, 128, 64) -> (64, 64, 128)
         Conv2D(filters=128, kernel_size=3, strides=2, padding="same",
-               kernel_initializer='random_uniform',),
+               kernel_initializer=RandomUniform(minval=-0.1, maxval=0.1)),
         LeakyReLU(),
         BatchNormalization(),
 
         # conv 3: (64, 64, 128) -> (32, 32, 256)
         Conv2D(filters=256, kernel_size=3, strides=2, padding="same",
-               kernel_initializer='random_uniform',),
+               kernel_initializer=RandomUniform(minval=-0.1, maxval=0.1)),
         LeakyReLU(),
         BatchNormalization(),
 
         # conv 4: (32, 32, 256) -> (32, 32, 512)
         Conv2D(filters=512, kernel_size=3, padding="same",
-               kernel_initializer='random_uniform',),
+               kernel_initializer=RandomUniform(minval=-0.1, maxval=0.1)),
         LeakyReLU(),
         BatchNormalization(),
 
         # conv8: (32, 32, 512) -> (64, 64, 256)
         Conv2DTranspose(filters=256, kernel_size=4, strides=2, padding="same",
-                 kernel_initializer='random_uniform',),
+                 kernel_initializer=RandomUniform(minval=-0.1, maxval=0.1)),
         LeakyReLU(),
 
         # FixMe: this layer is NOT in the article
         # conv9 (64, 64, 256) -> (256, 256, 256)
         Conv2DTranspose(filters=256, kernel_size=4, strides=4, padding="same",
-                 kernel_initializer='random_uniform',),
+                 kernel_initializer=RandomUniform(minval=-0.1, maxval=0.1)),
         LeakyReLU(),
 
         # prediction (256, 256, 256) -> (256, 256, n_classes)
         Conv2D(filters=n_classes, kernel_size=1, padding="same",
-                        kernel_initializer='random_uniform',),
+                        kernel_initializer=RandomUniform(minval=-0.1, maxval=0.1)),
         Activation('softmax')
     ])
     return model
