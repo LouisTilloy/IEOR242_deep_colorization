@@ -23,8 +23,8 @@ tar -xvf ILSVRC2010_images_val.tar
 ### 2) Training
 You can train the network with using the script train.py:
 ```
-python train.py --model (*paper*/small/tiny)
-		--data (*imagenet*/cifar10)
+python train.py --model (paper(default)/small/tiny)
+		--data (imagenet(default)/cifar10)
 		--n_data (number of images in the dataset, default=50000, this is to deduce how many steps are needed for 1 epoch)
 		--batch_size (default=40)
 		--resolution (default=104, set it to 32 for cifar-10)
@@ -32,7 +32,10 @@ python train.py --model (*paper*/small/tiny)
 		--regression (flag to use the regression versions of the networks)
 		--logdir (default='tensorboard', logs directory for tensorboard)
 ```
-
+Example to train on imagenet with resolution (104, 104):
+```
+python train.py --model paper --data imagenet --n_data 50000 --batch_size 40 --resolution 104 --n_bins 13
+```
 ### 3) Results
 To visualize results, you can use the notebook model_experimentation.ipynb and add a code block similar to the ones already written.
 
