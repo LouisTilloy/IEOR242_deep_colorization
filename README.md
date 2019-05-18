@@ -40,13 +40,13 @@ python train.py --model paper --data imagenet --n_data 50000 --batch_size 40 --r
 To visualize results, you can use the notebook model_experimentation.ipynb and add a code block similar to the ones already written.
 
 ## Code Structure
-train.py: This is the main file, it launches the training with the given options.
-utils.py: It contains pre-processing function and python generators to go through the data.
-models.py: It contains the three different models that we tried with tensorflow 1.X
-tests/test_utils.py: It contains unit tests for the pre-processing, make sure these runs without problems before trying to debug the models.
-cifar_10_exp__tf_20.ipynb: First results with cifar-10 and tensorflow 2.0
-model_experimentation.ipynb: Loading weights, visualizing and saving results. /!\ The trained weights are NOT provided because the models are too big and also because they are not satisfactory enough to our standards /!\
-pre_process_visualization.ipynb: To visualize the pre-processing.
+- train.py: This is the main file, it launches the training with the given options.
+- utils.py: It contains pre-processing function and python generators to go through the data.
+- models.py: It contains the three different models that we tried with tensorflow 1.X
+- tests/test_utils.py: It contains unit tests for the pre-processing, make sure these runs without problems before trying to debug the models.
+- cifar_10_exp__tf_20.ipynb: First results with cifar-10 and tensorflow 2.0
+- model_experimentation.ipynb: Loading weights, visualizing and saving results. /!\ The trained weights are NOT provided because the models are too big and also because they are not satisfactory enough to our standards /!\
+- pre_process_visualization.ipynb: To visualize the pre-processing.
 
 The testing part does not include any metrics since there is no real metric that really captures the "accuracy" of the model, since the quality of the colorization is such a subjective notion.
 
