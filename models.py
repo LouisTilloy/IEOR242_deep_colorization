@@ -4,6 +4,9 @@ from keras.layers import Activation, Conv2D, BatchNormalization, Conv2DTranspose
 
 
 def get_model(resolution, n_classes=None, is_regression=False):
+    """
+    Same as in the paper.
+    """
     body = [
         # conv 1: (256, 256, 1) -> (128, 128, 64)
         Conv2D(filters=64, kernel_size=3, padding="same",
